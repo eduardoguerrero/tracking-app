@@ -2,12 +2,12 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Aeroflash Tracking API",
-        "description": "REST API for package tracking and shipment status management. This API allows registering packages, querying tracking information, and updating delivery status.",
+        "description": "REST API for package tracking and shipment status management.",
         "version": "1.0.0"
     },
     "servers": [
         {
-            "url": "http://localhost:8090",
+            "url": "http://localhost:8000",
             "description": "Local development server"
         }
     ],
@@ -18,7 +18,7 @@
                     "Authentication"
                 ],
                 "summary": "Authenticate and obtain JWT token",
-                "description": "Validates user credentials and returns a JWT access token for authenticating subsequent requests.",
+                "description": "Validates user credentials and returns a JWT access token.",
                 "operationId": "login",
                 "requestBody": {
                     "required": true,
@@ -65,7 +65,7 @@
                                             "properties": {
                                                 "access_token": {
                                                     "type": "string",
-                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                                                    "example": "eyJ0e..."
                                                 },
                                                 "token_type": {
                                                     "type": "string",
@@ -130,13 +130,86 @@
                 }
             }
         },
+        "/api/v1/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Refresh an expired JWT token",
+                "description": "Issues a new access token using the current JWT. The old token must have a valid signature and be within the 2-week refresh window.",
+                "operationId": "refreshToken",
+                "responses": {
+                    "200": {
+                        "description": "Token refreshed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token refreshed successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "access_token": {
+                                                    "type": "string"
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "Bearer"
+                                                },
+                                                "expires_in": {
+                                                    "type": "integer",
+                                                    "example": 3600
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token invalid or outside refresh window",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token is invalid or outside refresh window"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/packages": {
             "post": {
                 "tags": [
                     "Packages"
                 ],
                 "summary": "Register a new package",
-                "description": "Creates a new package in the system with initial \"Registered\" status. Requires a unique tracking number.",
+                "description": "Creates a new package with initial \"Registered\" status.",
                 "operationId": "registerPackage",
                 "requestBody": {
                     "required": true,
@@ -150,45 +223,38 @@
                                 ],
                                 "properties": {
                                     "tracking_number": {
-                                        "description": "Unique tracking number for the package",
                                         "type": "string",
                                         "example": "AF-PKG-202501",
                                         "maxLength": 50
                                     },
                                     "description": {
-                                        "description": "Package contents description",
                                         "type": "string",
-                                        "example": "Dell XPS Laptop for urgent delivery",
+                                        "example": "Dell XPS Laptop",
                                         "maxLength": 255
                                     },
                                     "weight": {
-                                        "description": "Package weight in kg",
                                         "type": "number",
                                         "format": "float",
                                         "example": 2.5,
                                         "nullable": true
                                     },
                                     "branch_id": {
-                                        "description": "ID of the branch where the package is registered",
                                         "type": "integer",
                                         "example": 1
                                     },
                                     "delivery_address": {
-                                        "description": "Destination delivery address",
                                         "type": "string",
-                                        "example": "Calle Madero 123, Col. Centro",
+                                        "example": "Calle Madero 123",
                                         "nullable": true,
                                         "maxLength": 255
                                     },
                                     "recipient_name": {
-                                        "description": "Name of the recipient",
                                         "type": "string",
                                         "example": "Roberto Sánchez",
                                         "nullable": true,
                                         "maxLength": 150
                                     },
                                     "recipient_phone": {
-                                        "description": "Phone number of the recipient",
                                         "type": "string",
                                         "example": "55-4000-0001",
                                         "nullable": true,
@@ -218,94 +284,11 @@
                                         "data": {
                                             "properties": {
                                                 "package": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "integer"
-                                                        },
-                                                        "tracking_number": {
-                                                            "type": "string"
-                                                        },
-                                                        "description": {
-                                                            "type": "string"
-                                                        },
-                                                        "weight": {
-                                                            "type": "number",
-                                                            "format": "float",
-                                                            "nullable": true
-                                                        },
-                                                        "status": {
-                                                            "type": "string",
-                                                            "example": "Registered"
-                                                        },
-                                                        "branch_id": {
-                                                            "type": "integer"
-                                                        },
-                                                        "courier_id": {
-                                                            "type": "integer",
-                                                            "nullable": true
-                                                        },
-                                                        "vehicle_id": {
-                                                            "type": "integer",
-                                                            "nullable": true
-                                                        },
-                                                        "delivery_address": {
-                                                            "type": "string",
-                                                            "nullable": true
-                                                        },
-                                                        "recipient_name": {
-                                                            "type": "string",
-                                                            "nullable": true
-                                                        },
-                                                        "recipient_phone": {
-                                                            "type": "string",
-                                                            "nullable": true
-                                                        },
-                                                        "delivered_at": {
-                                                            "type": "string",
-                                                            "format": "date-time",
-                                                            "nullable": true
-                                                        },
-                                                        "created_at": {
-                                                            "type": "string",
-                                                            "format": "date-time"
-                                                        },
-                                                        "updated_at": {
-                                                            "type": "string",
-                                                            "format": "date-time"
-                                                        }
-                                                    },
                                                     "type": "object"
                                                 },
                                                 "tracking_history": {
                                                     "type": "array",
                                                     "items": {
-                                                        "properties": {
-                                                            "id": {
-                                                                "type": "integer"
-                                                            },
-                                                            "package_id": {
-                                                                "type": "integer"
-                                                            },
-                                                            "previous_status": {
-                                                                "type": "string",
-                                                                "nullable": true
-                                                            },
-                                                            "new_status": {
-                                                                "type": "string"
-                                                            },
-                                                            "comment": {
-                                                                "type": "string",
-                                                                "nullable": true
-                                                            },
-                                                            "location": {
-                                                                "type": "string",
-                                                                "nullable": true
-                                                            },
-                                                            "created_at": {
-                                                                "type": "string",
-                                                                "format": "date-time"
-                                                            }
-                                                        },
                                                         "type": "object"
                                                     }
                                                 }
@@ -329,7 +312,7 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthenticated - token missing or invalid",
+                        "description": "Unauthenticated",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -352,13 +335,12 @@
                     "Packages"
                 ],
                 "summary": "Get package details and tracking history",
-                "description": "Returns full package information including its complete status history timeline.",
+                "description": "Returns full package information including its status history timeline.",
                 "operationId": "getPackageByTrackingNumber",
                 "parameters": [
                     {
                         "name": "tracking_number",
                         "in": "path",
-                        "description": "Package tracking number",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -445,13 +427,12 @@
                     "Packages"
                 ],
                 "summary": "Update package delivery status",
-                "description": "Changes the status of a package following valid state transitions. The status flow is: Registered → In Transit → Out for Delivery → Delivered. A package can be Cancelled at any stage except Delivered. Moving to \"In Transit\" requires an active courier and vehicle.",
+                "description": "Changes package status following valid transitions: Registered → In Transit → Out for Delivery → Delivered.",
                 "operationId": "updatePackageStatus",
                 "parameters": [
                     {
                         "name": "tracking_number",
                         "in": "path",
-                        "description": "Package tracking number",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -469,7 +450,6 @@
                                 ],
                                 "properties": {
                                     "new_status": {
-                                        "description": "New status for the package",
                                         "type": "string",
                                         "example": "In Transit",
                                         "enum": [
@@ -480,27 +460,23 @@
                                         ]
                                     },
                                     "comment": {
-                                        "description": "Optional comment about the status change",
                                         "type": "string",
-                                        "example": "En route to destination",
+                                        "example": "En route",
                                         "nullable": true,
                                         "maxLength": 255
                                     },
                                     "location": {
-                                        "description": "Current location of the package",
                                         "type": "string",
                                         "example": "CDMX Centro",
                                         "nullable": true,
                                         "maxLength": 150
                                     },
                                     "courier_id": {
-                                        "description": "ID of the assigned courier (required for \"In Transit\" status)",
                                         "type": "integer",
                                         "example": 1,
                                         "nullable": true
                                     },
                                     "vehicle_id": {
-                                        "description": "ID of the assigned vehicle (required for \"In Transit\" status)",
                                         "type": "integer",
                                         "example": 1,
                                         "nullable": true

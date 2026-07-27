@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\UseCases;
 
 use App\Application\DTOs\UpdatePackageStatusDTO;
@@ -9,9 +11,8 @@ use App\Domain\Repositories\PackageRepositoryInterface;
 
 class UpdatePackageStatusUseCase
 {
-    public function __construct(
-        private readonly PackageRepositoryInterface $packageRepository,
-    ) {
+    public function __construct(private readonly PackageRepositoryInterface $packageRepository)
+    {
     }
 
     public function execute(string $trackingNumber, UpdatePackageStatusDTO $dto): PackageResponse
@@ -28,13 +29,15 @@ class UpdatePackageStatusUseCase
 
         $updatedPackage = $this->packageRepository->updateStatus($package);
 
-        $this->packageRepository->addStatusHistory(new TrackingHistory(
-            packageId: $updatedPackage->id,
-            previousStatus: $previousStatus,
-            newStatus: $updatedPackage->status->value,
-            comment: $dto->comment,
-            location: $dto->location,
-        ));
+        $this->packageRepository->addStatusHistory(
+            new TrackingHistory(
+                packageId: $updatedPackage->id,
+                previousStatus: $previousStatus,
+                newStatus: $updatedPackage->status->value,
+                comment: $dto->comment,
+                location: $dto->location,
+            )
+        );
 
         $history = $this->packageRepository->getStatusHistory($updatedPackage->id);
 

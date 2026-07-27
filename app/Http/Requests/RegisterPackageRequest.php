@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Http\Responses\ApiResponse;
+use Illuminate\Http\Response;
 
 class RegisterPackageRequest extends FormRequest
 {
@@ -30,7 +33,7 @@ class RegisterPackageRequest extends FormRequest
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(
-            ApiResponse::error('Validation error', 400, $validator->errors()->toArray())
+            ApiResponse::error('Validation error', Response::HTTP_BAD_REQUEST, $validator->errors()->toArray())
         );
     }
 }

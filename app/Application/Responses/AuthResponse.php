@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Responses;
 
-use App\Domain\Entities\Package;
-use App\Domain\Entities\TrackingHistory;
-
-class PackageResponse
+class AuthResponse
 {
     public function __construct(
         public readonly bool $success,
@@ -16,14 +13,15 @@ class PackageResponse
     ) {
     }
 
-    public static function fromPackage(Package $package, array $history = []): self
+    public static function fromToken(string $token, ?int $ttl = null): self
     {
         return new self(
             success: true,
-            message: 'Operation successful',
+            message: 'Authentication successful',
             data: [
-                'package' => $package->toArray(),
-                'tracking_history' => array_map(fn(TrackingHistory $h) => $h->toArray(), $history),
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'expires_in' => $ttl ?? (int)config('jwt.ttl', 3600),
             ],
         );
     }

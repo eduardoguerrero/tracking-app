@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\DTOs;
 
 use Illuminate\Support\Facades\Validator;
@@ -31,16 +33,14 @@ class RegisterPackageDTO
         ]);
 
         if ($validator->fails()) {
-            throw new InvalidArgumentException(
-                json_encode($validator->errors()->toArray())
-            );
+            throw new InvalidArgumentException(json_encode($validator->errors()->toArray()));
         }
 
         return new self(
             trackingNumber: $data['tracking_number'],
             description: $data['description'],
-            weight: isset($data['weight']) ? (float) $data['weight'] : null,
-            branchId: (int) $data['branch_id'],
+            weight: isset($data['weight']) ? (float)$data['weight'] : null,
+            branchId: (int)$data['branch_id'],
             deliveryAddress: $data['delivery_address'] ?? null,
             recipientName: $data['recipient_name'] ?? null,
             recipientPhone: $data['recipient_phone'] ?? null,

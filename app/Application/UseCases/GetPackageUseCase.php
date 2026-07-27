@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\UseCases;
 
 use App\Application\Responses\PackageResponse;
@@ -7,9 +9,8 @@ use App\Domain\Repositories\PackageRepositoryInterface;
 
 class GetPackageUseCase
 {
-    public function __construct(
-        private readonly PackageRepositoryInterface $packageRepository,
-    ) {
+    public function __construct(private readonly PackageRepositoryInterface $packageRepository)
+    {
     }
 
     public function execute(string $trackingNumber): PackageResponse

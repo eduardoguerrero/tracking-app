@@ -3,6 +3,7 @@
 namespace App\Domain\Entities;
 
 use App\Domain\Enums\PackageStatusEnum;
+use App\Domain\Exceptions\InvalidStatusTransitionException;
 
 class Package
 {
@@ -27,7 +28,7 @@ class Package
     public function updateStatus(PackageStatusEnum $newStatus, ?int $courierId = null, ?int $vehicleId = null): void
     {
         if (!$this->status->canTransitionTo($newStatus)) {
-            throw new \App\Domain\Exceptions\InvalidStatusTransitionException(
+            throw new InvalidStatusTransitionException(
                 $this->status->value,
                 $newStatus->value
             );
@@ -35,7 +36,7 @@ class Package
 
         if ($newStatus->requiresAssignedCourierAndVehicle()) {
             if ($courierId === null || $vehicleId === null) {
-                throw new \App\Domain\Exceptions\InvalidStatusTransitionException(
+                throw new InvalidStatusTransitionException(
                     $this->status->value,
                     $newStatus->value,
                     'An active courier and vehicle are required to change to "In Transit"'

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\DTOs;
 
 use App\Domain\Enums\PackageStatusEnum;
@@ -28,25 +30,21 @@ class UpdatePackageStatusDTO
         ]);
 
         if ($validator->fails()) {
-            throw new InvalidArgumentException(
-                json_encode($validator->errors()->toArray())
-            );
+            throw new InvalidArgumentException(json_encode($validator->errors()->toArray()));
         }
 
         try {
             $newStatus = PackageStatusEnum::fromString($data['new_status']);
         } catch (\InvalidArgumentException $e) {
-            throw new InvalidArgumentException(
-                json_encode(['new_status' => ['Invalid status']])
-            );
+            throw new InvalidArgumentException(json_encode(['new_status' => ['Invalid status']]));
         }
 
         return new self(
             newStatus: $newStatus,
             comment: $data['comment'] ?? null,
             location: $data['location'] ?? null,
-            courierId: isset($data['courier_id']) ? (int) $data['courier_id'] : null,
-            vehicleId: isset($data['vehicle_id']) ? (int) $data['vehicle_id'] : null,
+            courierId: isset($data['courier_id']) ? (int)$data['courier_id'] : null,
+            vehicleId: isset($data['vehicle_id']) ? (int)$data['vehicle_id'] : null,
         );
     }
 }

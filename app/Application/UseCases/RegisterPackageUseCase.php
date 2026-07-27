@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\UseCases;
 
 use App\Application\DTOs\RegisterPackageDTO;
@@ -11,9 +13,8 @@ use App\Domain\Entities\TrackingHistory;
 
 class RegisterPackageUseCase
 {
-    public function __construct(
-        private readonly PackageRepositoryInterface $packageRepository,
-    ) {
+    public function __construct(private readonly PackageRepositoryInterface $packageRepository)
+    {
     }
 
     public function execute(RegisterPackageDTO $dto): PackageResponse
@@ -31,12 +32,14 @@ class RegisterPackageUseCase
 
         $savedPackage = $this->packageRepository->save($package);
 
-        $this->packageRepository->addStatusHistory(new TrackingHistory(
-            packageId: $savedPackage->id,
-            previousStatus: null,
-            newStatus: PackageStatusEnum::Registered->value,
-            comment: 'Package registered in the system',
-        ));
+        $this->packageRepository->addStatusHistory(
+            new TrackingHistory(
+                packageId: $savedPackage->id,
+                previousStatus: null,
+                newStatus: PackageStatusEnum::Registered->value,
+                comment: 'Package registered in the system',
+            )
+        );
 
         $history = $this->packageRepository->getStatusHistory($savedPackage->id);
 
