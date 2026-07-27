@@ -1,0 +1,646 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Aeroflash Tracking API",
+        "description": "REST API for package tracking and shipment status management. This API allows registering packages, querying tracking information, and updating delivery status.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8090",
+            "description": "Local development server"
+        }
+    ],
+    "paths": {
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authenticate and obtain JWT token",
+                "description": "Validates user credentials and returns a JWT access token for authenticating subsequent requests.",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@aeroflash.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authentication successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Authentication successful"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "access_token": {
+                                                    "type": "string",
+                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "Bearer"
+                                                },
+                                                "expires_in": {
+                                                    "type": "integer",
+                                                    "example": 3600
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid credentials"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/packages": {
+            "post": {
+                "tags": [
+                    "Packages"
+                ],
+                "summary": "Register a new package",
+                "description": "Creates a new package in the system with initial \"Registered\" status. Requires a unique tracking number.",
+                "operationId": "registerPackage",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "tracking_number",
+                                    "description",
+                                    "branch_id"
+                                ],
+                                "properties": {
+                                    "tracking_number": {
+                                        "description": "Unique tracking number for the package",
+                                        "type": "string",
+                                        "example": "AF-PKG-202501",
+                                        "maxLength": 50
+                                    },
+                                    "description": {
+                                        "description": "Package contents description",
+                                        "type": "string",
+                                        "example": "Dell XPS Laptop for urgent delivery",
+                                        "maxLength": 255
+                                    },
+                                    "weight": {
+                                        "description": "Package weight in kg",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 2.5,
+                                        "nullable": true
+                                    },
+                                    "branch_id": {
+                                        "description": "ID of the branch where the package is registered",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "delivery_address": {
+                                        "description": "Destination delivery address",
+                                        "type": "string",
+                                        "example": "Calle Madero 123, Col. Centro",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "recipient_name": {
+                                        "description": "Name of the recipient",
+                                        "type": "string",
+                                        "example": "Roberto Sánchez",
+                                        "nullable": true,
+                                        "maxLength": 150
+                                    },
+                                    "recipient_phone": {
+                                        "description": "Phone number of the recipient",
+                                        "type": "string",
+                                        "example": "55-4000-0001",
+                                        "nullable": true,
+                                        "maxLength": 20
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Package registered successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Package registered successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "package": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "tracking_number": {
+                                                            "type": "string"
+                                                        },
+                                                        "description": {
+                                                            "type": "string"
+                                                        },
+                                                        "weight": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "nullable": true
+                                                        },
+                                                        "status": {
+                                                            "type": "string",
+                                                            "example": "Registered"
+                                                        },
+                                                        "branch_id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "courier_id": {
+                                                            "type": "integer",
+                                                            "nullable": true
+                                                        },
+                                                        "vehicle_id": {
+                                                            "type": "integer",
+                                                            "nullable": true
+                                                        },
+                                                        "delivery_address": {
+                                                            "type": "string",
+                                                            "nullable": true
+                                                        },
+                                                        "recipient_name": {
+                                                            "type": "string",
+                                                            "nullable": true
+                                                        },
+                                                        "recipient_phone": {
+                                                            "type": "string",
+                                                            "nullable": true
+                                                        },
+                                                        "delivered_at": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "nullable": true
+                                                        },
+                                                        "created_at": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        },
+                                                        "updated_at": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "tracking_history": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "package_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "previous_status": {
+                                                                "type": "string",
+                                                                "nullable": true
+                                                            },
+                                                            "new_status": {
+                                                                "type": "string"
+                                                            },
+                                                            "comment": {
+                                                                "type": "string",
+                                                                "nullable": true
+                                                            },
+                                                            "location": {
+                                                                "type": "string",
+                                                                "nullable": true
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated - token missing or invalid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/packages/{tracking_number}": {
+            "get": {
+                "tags": [
+                    "Packages"
+                ],
+                "summary": "Get package details and tracking history",
+                "description": "Returns full package information including its complete status history timeline.",
+                "operationId": "getPackageByTrackingNumber",
+                "parameters": [
+                    {
+                        "name": "tracking_number",
+                        "in": "path",
+                        "description": "Package tracking number",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "AF-TEST-001"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Package found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Package found"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "package": {
+                                                    "type": "object"
+                                                },
+                                                "tracking_history": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Package not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Package not found: INVALID-999"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/packages/{tracking_number}/status": {
+            "patch": {
+                "tags": [
+                    "Packages"
+                ],
+                "summary": "Update package delivery status",
+                "description": "Changes the status of a package following valid state transitions. The status flow is: Registered → In Transit → Out for Delivery → Delivered. A package can be Cancelled at any stage except Delivered. Moving to \"In Transit\" requires an active courier and vehicle.",
+                "operationId": "updatePackageStatus",
+                "parameters": [
+                    {
+                        "name": "tracking_number",
+                        "in": "path",
+                        "description": "Package tracking number",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "AF-TEST-001"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "new_status"
+                                ],
+                                "properties": {
+                                    "new_status": {
+                                        "description": "New status for the package",
+                                        "type": "string",
+                                        "example": "In Transit",
+                                        "enum": [
+                                            "In Transit",
+                                            "Out for Delivery",
+                                            "Delivered",
+                                            "Cancelled"
+                                        ]
+                                    },
+                                    "comment": {
+                                        "description": "Optional comment about the status change",
+                                        "type": "string",
+                                        "example": "En route to destination",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "location": {
+                                        "description": "Current location of the package",
+                                        "type": "string",
+                                        "example": "CDMX Centro",
+                                        "nullable": true,
+                                        "maxLength": 150
+                                    },
+                                    "courier_id": {
+                                        "description": "ID of the assigned courier (required for \"In Transit\" status)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "vehicle_id": {
+                                        "description": "ID of the assigned vehicle (required for \"In Transit\" status)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Status updated successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "package": {
+                                                    "type": "object"
+                                                },
+                                                "tracking_history": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid status transition",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cannot change from 'Registered' to 'Delivered'"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Package not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ErrorResponse": {
+                "description": "Standardized error response",
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Error description"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "example": "{\"tracking_number\": [\"The tracking_number field is required.\"]}",
+                        "nullable": true,
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "JWT token obtained from /api/v1/auth/login",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "in": "header"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Packages",
+            "description": "Package registration, tracking, and status management"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        }
+    ]
+}
