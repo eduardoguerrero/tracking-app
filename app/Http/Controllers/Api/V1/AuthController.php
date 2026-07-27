@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
@@ -24,11 +26,10 @@ use OpenApi\Attributes as OA;
     scheme: 'bearer',
     bearerFormat: 'JWT',
 )]
-class AuthController extends Controller
+final class AuthController extends Controller
 {
-    public function __construct(
-        private readonly JwtAuthService $jwtAuthService,
-    ) {
+    public function __construct(private readonly JwtAuthService $jwtAuthService,)
+    {
     }
 
     #[OA\Post(
@@ -69,7 +70,11 @@ class AuthController extends Controller
                             property: 'data',
                             type: 'object',
                             properties: [
-                                new OA\Property(property: 'access_token', type: 'string', example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'),
+                                new OA\Property(
+                                    property: 'access_token',
+                                    type: 'string',
+                                    example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
+                                ),
                                 new OA\Property(property: 'token_type', type: 'string', example: 'Bearer'),
                                 new OA\Property(property: 'expires_in', type: 'integer', example: 3600),
                             ]
@@ -102,10 +107,7 @@ class AuthController extends Controller
     )]
     public function login(LoginRequest $request)
     {
-        $token = $this->jwtAuthService->attempt(
-            $request->input('email'),
-            $request->input('password'),
-        );
+        $token = $this->jwtAuthService->attempt($request->input('email'), $request->input('password'));
 
         if (!$token) {
             return ApiResponse::error('Invalid credentials', 401);
