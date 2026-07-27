@@ -10,6 +10,6 @@ class PackageNotFoundException extends \RuntimeException
 {
     public function __construct(string $trackingNumber)
     {
-        parent::__construct("Package not found: {$trackingNumber}", Response::HTTP_NOT_FOUND);
+        parent::__construct("Package not found", Response::HTTP_NOT_FOUND);
     }
 }

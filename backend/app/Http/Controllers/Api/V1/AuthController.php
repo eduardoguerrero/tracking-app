@@ -45,4 +45,15 @@ final class AuthController extends Controller
 
         return ApiResponse::success(AuthResponse::fromToken($newToken)->toArray()['data'], 'Token refreshed successfully');
     }
+
+    public function me()
+    {
+        $user = auth()->user();
+
+        return ApiResponse::success([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+        ]);
+    }
 }

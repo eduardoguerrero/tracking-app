@@ -2,15 +2,6 @@
 
 REST API for package registration, tracking, and shipment status management.
 
-## Quick Start (Local)
-
-```bash
-cd backend
-composer install
-php artisan migrate:fresh --seed
-php artisan serve --port=8000
-```
-
 ## Quick Start Docker
 
 Single-command startup with MySQL:
@@ -29,6 +20,26 @@ Migrations and seed data run automatically on first startup. To rebuild after co
 docker compose down && docker compose up -d --build
 ```
 
+## Frontend (React)
+
+Web interface for tracking packages. Located in `/frontend`.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+- **App**: `http://localhost:5173`
+- **Login**: `admin@aeroflash.com` / `password`
+- Points to API at `http://localhost:8080/api/v1` (configurable in `.env`)
+
+Tech stack: **React 18 + Vite + TanStack Query + Tailwind CSS**.
+
+Features:
+- State management via **TanStack Query** (caching, no unnecessary re-renders)
+- **Loading skeleton**, **empty state**, and **error handling** for all states
+- **Responsive** design with Tailwind CSS
 #### MySQL Access
 
 ```bash
@@ -72,18 +83,6 @@ Registered → In Transit → Out for Delivery → Delivered
 |-------|-------|
 | Email | `admin@aeroflash.com` |
 | Password | `password` |
-
-### Example JWT Token
-
-```
-POST /api/v1/auth/login
-{
-    "email": "admin@aeroflash.com",
-    "password": "password"
-}
-```
-
-Use the returned `access_token` in the `Authorization: Bearer <token>` header.
 
 ## Test Data
 
