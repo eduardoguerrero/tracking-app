@@ -1,0 +1,39 @@
+name: Code Quality Checks
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  code-quality:
+    name: Run security analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create reports directory
+        run: mkdir -p /tmp/reports
+
+      - name: Run TruffleHog secret scan
+        run: |
+          docker run --rm \
+            -v "$PWD:/repo" \
+            trufflesecurity/trufflehog:latest \
+            filesystem /repo/src \
+            --json \
+            > /tmp/reports/trufflehog-secrets.json
+        continue-on-error: true
+
+      - name: Upload TruffleHog report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TruffleHog
+          path: /tmp/reports/trufflehog-secrets.json
