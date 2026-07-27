@@ -2,6 +2,15 @@
 
 REST API for package registration, tracking, and shipment status management.
 
+## Quick Start (Local)
+
+```bash
+cd backend
+composer install
+php artisan migrate:fresh --seed
+php artisan serve --port=8000
+```
+
 ## Quick Start Docker
 
 Single-command startup with MySQL:
@@ -89,6 +98,7 @@ Use the returned `access_token` in the `Authorization: Bearer <token>` header.
 ## Run Tests
 
 ```bash
+cd backend
 php artisan test
 ```
 

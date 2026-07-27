@@ -76,15 +76,16 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install --no-dev --prefer-dist --no-progress
+        working-directory: backend
 
       - name: OWASP Dependency-Check
         uses: dependency-check/Dependency-Check_Action@main
         with:
           project: 'Aeroflash Tracking App'
-          path: '.'
+          path: 'backend'
           format: 'HTML'
           args: >
-            --suppression suppression.xml
+            --suppression backend/suppression.xml
             --failOnCVSS 7
             --enableExperimental
         continue-on-error: true
