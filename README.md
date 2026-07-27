@@ -1,28 +1,53 @@
 # Aeroflash Package Tracking API
 
-REST API for package registration, tracking, and shipment status management.
+API REST para registro, rastreo y gestión de estado de paquetes.
 
-## Quick Start Docker
+## Inicio rápido con Docker
 
-Single-command startup with MySQL:
+```bash
+cp .env.example .env        # crea .env con credenciales por defecto
+```
+
+Las credenciales se configuran en el archivo `.env` en la raíz del proyecto (copiar desde `.env.example`). **Se muestran aquí solo para pruebas, en un proyecto real las credenciales nunca deben exponerse en el README.**
+
+| Variable | Valor por defecto | Descripción |
+|---|---|---|
+| `MYSQL_ROOT_PASSWORD` | `root_secret` | Contraseña root de MySQL |
+| `MYSQL_DATABASE` | `aeroflash` | Nombre de la base de datos |
+| `MYSQL_USER` | `aeroflash` | Usuario de la aplicación |
+| `MYSQL_PASSWORD` | `aeroflash_secret` | Contraseña del usuario |
+
+Ejecutar docker para levantar la API, fronted y la base de datos    MySQL
 
 ```bash
 docker compose up -d --build
+docker ps
 ```
 
-- **API**: `http://localhost:8080`
-- **Swagger UI**: `http://localhost:8080/api/documentation`
-- **MySQL**: `localhost:3307` (credentials below)
+| Servicio           | URL                                       |
+|--------------------|-------------------------------------------|
+| **Frontend**       | `http://localhost:5173`                   |
+| **API Swagger UI** | `http://localhost:8080/api/documentation` |
+| **MySQL**          | `Puerto 3307`                             |
 
-Migrations and seed data run automatically on first startup. To rebuild after code changes:
+Las migraciones y datos de prueba se ejecutan automáticamente al iniciar. Para reconstruir después de cambios en el código:
 
 ```bash
 docker compose down && docker compose up -d --build
 ```
 
-## Frontend (React)
 
-Web interface for tracking packages. Located in `/frontend`.
+## Credenciales de prueba
+
+| Campo | Valor |
+|-------|-------|
+| Email | `admin@aeroflash.com` |
+| Password | `password` |
+
+
+## Frontend (React) — Desarrollo local
+
+Sin Docker, ejecutar el frontend localmente. Ubicado en `/frontend`.
 
 ```bash
 cd frontend
@@ -32,41 +57,41 @@ npm run dev
 
 - **App**: `http://localhost:5173`
 - **Login**: `admin@aeroflash.com` / `password`
-- Points to API at `http://localhost:8080/api/v1` (configurable in `.env`)
+- Apunta a la API en `http://localhost:8080/api/v1` (configurable en `.env`)
 
-Tech stack: **React 18 + Vite + TanStack Query + Tailwind CSS**.
+Stack: **React 18 + Vite + TanStack Query + Tailwind CSS**.
 
-Features:
-- State management via **TanStack Query** (caching, no unnecessary re-renders)
-- **Loading skeleton**, **empty state**, and **error handling** for all states
-- **Responsive** design with Tailwind CSS
-#### MySQL Access
+#### Acceso a MySQL
+
+Conectarse desde el host:
 
 ```bash
 docker compose exec mysql mysql -u aeroflash -paeroflash_secret aeroflash
 ```
 
-| Field | Value |
+| Campo | Valor |
 |---|---|
 | Host | `localhost:3307` |
-| Database | `aeroflash` |
-| Username | `aeroflash` |
-| Password | `aeroflash_secret` |
+| Base de datos | `aeroflash` |
+| Usuario | `aeroflash` |
+| Contraseña | `aeroflash_secret` |
 
-## API Documentation (Swagger)
+## Documentación de la API (Swagger)
 
-Interactive Swagger UI available at: **`http://localhost:8000/api/documentation`**
+Swagger UI disponible en: **`http://localhost:8080/api/documentation`**
 
 ### Endpoints
 
-| Method | Endpoint | Auth | Description |
+| Método | Endpoint | Auth | Descripción |
 |--------|----------|------|-------------|
-| `POST` | `/api/v1/auth/login` | No | Authenticate and obtain JWT token |
-| `POST` | `/api/v1/packages` | Bearer JWT | Register a new package |
-| `GET` | `/api/v1/packages/{tracking_number}` | Bearer JWT | Get package details and tracking history |
-| `PATCH` | `/api/v1/packages/{tracking_number}/status` | Bearer JWT | Update package delivery status |
+| `POST` | `/api/v1/auth/login` | No | Autenticar y obtener token JWT |
+| `POST` | `/api/v1/auth/refresh` | Bearer JWT | Refrescar token expirado |
+| `GET` | `/api/v1/auth/me` | Bearer JWT | Obtener perfil del usuario |
+| `POST` | `/api/v1/packages` | Bearer JWT | Registrar un nuevo paquete |
+| `GET` | `/api/v1/packages/{tracking_number}` | Bearer JWT | Obtener detalle e historial del paquete |
+| `PATCH` | `/api/v1/packages/{tracking_number}/status` | Bearer JWT | Actualizar estado del paquete |
 
-### Status Flow
+### Flujo de estados
 
 ```
 Registered → In Transit → Out for Delivery → Delivered
@@ -74,83 +99,86 @@ Registered → In Transit → Out for Delivery → Delivered
   Cancelled   Cancelled      Cancelled
 ```
 
-- Moving to **In Transit** requires an active `courier_id` and `vehicle_id`
-- Invalid transitions return `400`
+- Cambiar a **In Transit** requiere un `courier_id` y `vehicle_id` activos
+- Transiciones inválidas retornan `400`
 
-## Test Credentials
+## Datos de prueba
 
-| Field | Value |
-|-------|-------|
-| Email | `admin@aeroflash.com` |
-| Password | `password` |
-
-## Test Data
-
-| Tracking Number | Status |
-|-----------------|--------|
+| Número de rastreo | Estado |
+|-------------------|--------|
 | `AF-TEST-001` | Registered |
 | `AF-TEST-002` | In Transit |
 | `AF-TEST-003` | Out for Delivery |
 | `AF-TEST-004` | Delivered |
 | `AF-TEST-005` | Cancelled |
 
-## Run Tests
+## Ejecutar tests
 
 ```bash
 cd backend
 php artisan test
 ```
 
-### Design Patterns and best practices
+## Arquitectura
 
-Clean Architecture with three layers:
+Clean Architecture con tres capas:
 
 ```
 app/
-├── Domain/              # Business entities, enums, repository interfaces
-├── Application/         # Use cases, DTOs, response objects
-└── Infrastructure/      # Eloquent models, repository implementations, JWT
+├── Domain/              # Entidades de negocio, enums, interfaces de repositorio
+├── Application/         # Casos de uso, DTOs, objetos de respuesta
+└── Infrastructure/      # Modelos Eloquent, implementaciones de repositorio, JWT
 ```
-Repository
-DTO
-Dependency injection
 
-## Security
+### Patrones de diseño
 
-### CI/CD Pipeline
+| Patrón | Donde se aplica |
+|---|---|
+| **Repository** | `PackageRepositoryInterface` → `EloquentPackageRepository` |
+| **DTO** | `RegisterPackageDTO`, `UpdatePackageStatusDTO`, `AuthResponse`, `PackageResponse` |
+| **Use Case / Interactor** | `RegisterPackageUseCase`, `GetPackageUseCase`, `UpdatePackageStatusUseCase` |
+| **State Machine** | `PackageStatusEnum` con transiciones de estado |
+| **Dependency Injection** | Bindings en `AppServiceProvider` |
 
-Automated security scanning via GitHub Actions (`.github/workflows/security-scan.yml`) runs on every push, PR, and weekly schedule:
+## Seguridad
 
-| Tool | Type | What it does |
-|------|------|---------------|
-| **Semgrep** | SAST | Analyzes source code for vulnerabilities, anti-patterns, and insecure coding patterns |
-| **OWASP Dependency-Check** | SCA | Scans `composer.lock` for third-party dependencies with known CVEs; fails on CVSS >= 7 |
-| **TruffleHog** | Secrets | Scans the full repository for hardcoded credentials, API keys, tokens, and other sensitive data |
+### Pipeline CI/CD
 
-### Authentication — JWT
+Escaneo automático de seguridad vía GitHub Actions (`.github/workflows/security-scan.yml`) en cada push, PR y semanalmente:
 
-All package endpoints are protected with **JWT (JSON Web Token)** via `App\Infrastructure\Auth\JwtAuthService`. The implementation uses [`firebase/php-jwt`](https://github.com/firebase/php-jwt) (v7), a lightweight, zero-dependency library that provides:
+| Herramienta | Tipo | Descripción |
+|---|---|---|
+| **Semgrep** | SAST | Analiza código fuente en busca de vulnerabilidades y patrones inseguros |
+| **OWASP Dependency-Check** | SCA | Escanea `composer.lock` en busca de dependencias con CVEs conocidos |
+| **TruffleHog** | Secrets | Escanea el repositorio en busca de credenciales, API keys y tokens |
 
-### Input Validation — LoginRequest
+### Autenticación — JWT
 
-`app/Http/Requests/LoginRequest.php` applies layered defenses **before** the request reaches the controller:
+Todos los endpoints de paquetes están protegidos con **JWT (JSON Web Token)** mediante `App\Infrastructure\Auth\JwtAuthService`.
 
-### OWASP Best Practices
 
-- **JWT authentication** on all package endpoints (`firebase/php-jwt`, stateless, configurable via `JWT_SECRET`)
-- **Rate limiting**: 5 login attempts/minute per IP + email (brute-force protection)
-- **Input validation** via FormRequests with sanitization (`trim`, `mb_strtolower`, email DNS check)
-- **XSS prevention**: `XssSanitizer` strips HTML tags from inputs; `SecurityHeaders` middleware sets `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`
-- **Parameterized queries** via Eloquent ORM (SQL Injection prevention)
-- **bcrypt hashing** via `Hash::check()` with BCRYPT_ROUNDS=12 (constant-time comparison)
-- **No user enumeration**: generic "Invalid credentials" message hides whether email or password is wrong
-- **Short JWT TTL**: 1-hour token expiry with refresh window of 2 weeks
-- **Standardized error responses** (400, 401, 404, 500)
-- **TruffleHog** scans every commit for leaked secrets before they reach production
 
-### Docker Services
+### Validación de entradas — LoginRequest
 
-| Service | Container | Port | Description |
+`app/Http/Requests/LoginRequest.php` aplica defensas en capas **antes** de que la petición llegue al controlador:
+
+### Buenas prácticas OWASP
+
+- **Autenticación JWT** en todos los endpoints de paquetes (`firebase/php-jwt`, stateless, configurable vía `JWT_SECRET`)
+- **Rate limiting**: 5 intentos de login/minuto por IP + email (protección anti fuerza bruta)
+- **Validación de entradas** vía FormRequests con sanitización (`trim`, `mb_strtolower`, verificación DNS)
+- **Prevención XSS**: `XssSanitizer` elimina etiquetas HTML; middleware `SecurityHeaders` agrega `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`
+- **Consultas parametrizadas** vía Eloquent ORM (prevención de SQL Injection)
+- **Hash bcrypt** mediante `Hash::check()` con BCRYPT_ROUNDS=12
+- **Sin enumeración de usuarios**: mensaje genérico "Invalid credentials"
+- **JWT de corta duración**: token expira en 1 hora, con ventana de refresco de 2 semanas
+- **Respuestas de error estandarizadas** (400, 401, 404, 500)
+- **TruffleHog** escanea cada commit en busca de secretos
+
+### Servicios Docker
+
+| Servicio | Contenedor | Puerto | Descripción |
 |---|---|---|---|
-| **app** | `aeroflash-api` | `8080:80` | Laravel API (nginx + PHP-FPM via supervisor) |
-| **mysql** | `aeroflash-mysql` | `3307:3306` | MySQL 8.0 with persistent volume |
+| **api** | `aeroflash-api` | `8080:80` | Laravel API (nginx + PHP-FPM vía supervisor) |
+| **frontend** | `aeroflash-frontend` | `5173:5173` | Vite dev server con React |
+| **mysql** | `aeroflash-mysql` | `3307:3306` | MySQL 8.0 con volumen persistente |

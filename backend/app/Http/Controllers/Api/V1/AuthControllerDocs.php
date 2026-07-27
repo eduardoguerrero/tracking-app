@@ -12,8 +12,12 @@ use OpenApi\Attributes as OA;
     description: 'REST API for package tracking and shipment status management.',
 )]
 #[OA\Server(
+    url: 'http://localhost:8080',
+    description: 'Docker - API'
+)]
+#[OA\Server(
     url: 'http://localhost:8000',
-    description: 'Local development server'
+    description: 'Local dev server'
 )]
 #[OA\SecurityScheme(
     securityScheme: 'bearerAuth',
