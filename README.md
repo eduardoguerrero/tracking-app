@@ -39,8 +39,13 @@ Las migraciones y datos de prueba se ejecutan automáticamente al iniciar. Para 
 ```bash
 docker compose down && docker compose up -d --build
 ```
+#### Acceso a MySQL
+```bash
+docker compose exec mysql mysql -u aeroflash -paeroflash_secret aeroflash
+```
 
-## Credenciales de prueba
+
+## Credenciales de prueba del fronted
 
 | Campo | Valor |
 |-------|-------|
@@ -64,21 +69,6 @@ npm run dev
 - Apunta a la API en `http://localhost:8080/api/v1` (configurable en `.env`)
 
 Stack: **React 18 + Vite + TanStack Query + Tailwind CSS**.
-
-#### Acceso a MySQL
-
-Conectarse desde el host:
-
-```bash
-docker compose exec mysql mysql -u aeroflash -paeroflash_secret aeroflash
-```
-
-| Campo | Valor |
-|---|---|
-| Host | `localhost:3307` |
-| Base de datos | `aeroflash` |
-| Usuario | `aeroflash` |
-| Contraseña | `aeroflash_secret` |
 
 ## Documentación de la API (Swagger)
 
@@ -116,11 +106,10 @@ Registered → In Transit → Out for Delivery → Delivered
 | `AF-TEST-004` | Delivered |
 | `AF-TEST-005` | Cancelled |
 
-## Ejecutar tests
+## Ejecutar unit tests
 
 ```bash
-cd backend
-php artisan test
+cd backend && php artisan test
 ```
 
 ## Arquitectura
