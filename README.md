@@ -89,7 +89,7 @@ Stack: **React 18 + Vite + TanStack Query + Tailwind CSS**.
 
 Swagger UI disponible en: **`http://localhost:8080/api/documentation`**
 
-![screenshot/docs.png](screenshot/img.png)
+![screenshot/docs.png](screenshot/docs.png)
 
 ### Endpoints
 
