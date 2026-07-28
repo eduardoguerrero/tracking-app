@@ -15,12 +15,12 @@ cp .env.example .env # crea .env con credenciales por defecto
 
 Las credenciales se configuran en el archivo `.env` en la raíz del proyecto (copiar desde `.env.example`). **Se muestran aquí solo para pruebas, en un proyecto real las credenciales nunca deben exponerse en el README.**
 
-| Variable | Valor por defecto | Descripción |
-|---|---|---|
-| `MYSQL_ROOT_PASSWORD` | `root_secret` | Contraseña root de MySQL |
-| `MYSQL_DATABASE` | `aeroflash` | Nombre de la base de datos |
-| `MYSQL_USER` | `aeroflash` | Usuario de la aplicación |
-| `MYSQL_PASSWORD` | `aeroflash_secret` | Contraseña del usuario |
+| Variable | Valor por defecto |
+|---|---|
+| `MYSQL_ROOT_PASSWORD` | `root_secret` |
+| `MYSQL_DATABASE` | `aeroflash`|
+| `MYSQL_USER` | `aeroflash`|
+| `MYSQL_PASSWORD` | `aeroflash_secret`|
 
 Ejecutar docker para levantar la API, fronted y la base de datos    MySQL
 
@@ -40,7 +40,6 @@ Las migraciones y datos de prueba se ejecutan automáticamente al iniciar. Para 
 ```bash
 docker compose down && docker compose up -d --build
 ```
-
 
 ## Credenciales de prueba
 

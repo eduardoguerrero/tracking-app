@@ -8,7 +8,14 @@ done
 echo "MySQL is ready."
 
 php artisan key:generate --force
+php artisan config:clear
 php artisan migrate --force
-php artisan db:seed --force 2>/dev/null || echo "Seed data already exists, skipping."
+
+if php artisan db:seed --force 2>/dev/null; then
+    echo "Database seeded."
+else
+    echo "Seed data already exists, skipping."
+fi
+php artisan optimize
 
 exec /usr/bin/supervisord -c /etc/supervisor/supervisord.conf

@@ -30,9 +30,7 @@ COPY . .
 
 RUN cp .env.docker .env \
     && composer dump-autoload --optimize \
-    && php artisan config:clear \
-    && php artisan package:discover \
-    && php artisan optimize
+    && php artisan package:discover
 
 RUN mkdir -p /app/storage /app/bootstrap/cache \
     && chown -R www-data:www-data /app/storage /app/bootstrap/cache \

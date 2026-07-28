@@ -1,0 +1,21 @@
+* text=auto eol=lf
+
+*.sh text eol=lf
+*.bash text eol=lf
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.env text eol=lf
+*.env.example text eol=lf
+.env.docker text eol=lf
+.env.docker.example text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.editorconfig text eol=lf
