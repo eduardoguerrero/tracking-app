@@ -6,6 +6,7 @@ CREATE INDEX idx_branches_id_name
 
 
 DROP PROCEDURE IF EXISTS GetDeliveredPackagesByBranch;
+
 --  CALL GetDeliveredPackagesByBranch(1);
 CREATE PROCEDURE GetDeliveredPackagesByBranch(IN months_back INT)
 BEGIN

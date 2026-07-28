@@ -2,6 +2,15 @@
 
 API REST para registro, rastreo y gestión de estado de paquetes.
 
+| Capa | Tecnología |
+|---|---|
+| **API Backend** | PHP 8.3 / Laravel 13 |
+| **Frontend** | React 18 / Vite / TanStack Query |
+| **Base de datos** | MySQL 8.0 |
+| **Autenticación** | JWT (firebase/php-jwt) |
+| **Documentación** | Swagger (OpenAPI 3.0) |
+| **Contenedores** | Docker + Docker Compose |
+
 ## Inicio rápido con Docker
 
 ```bash
