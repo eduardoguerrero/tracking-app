@@ -5,7 +5,12 @@ API REST para registro, rastreo y gestión de estado de paquetes.
 ## Inicio rápido con Docker
 
 ```bash
-cp .env.example .env        # crea .env con credenciales por defecto
+
+git clone https://github.com/eduardoguerrero/tracking-app
+
+cd tracking-app
+
+cp .env.example .env # crea .env con credenciales por defecto
 ```
 
 Las credenciales se configuran en el archivo `.env` en la raíz del proyecto (copiar desde `.env.example`). **Se muestran aquí solo para pruebas, en un proyecto real las credenciales nunca deben exponerse en el README.**
