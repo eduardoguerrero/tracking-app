@@ -1,58 +1,189 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Aeroflash Package Tracking API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST para registro, rastreo y gestión de estado de paquetes.
 
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Inicio rápido con Docker
 
 ```bash
-composer require laravel/boost --dev
 
-php artisan boost:install
+git clone https://github.com/eduardoguerrero/tracking-app
+
+cd tracking-app
+
+cp .env.example .env # crea .env con credenciales por defecto
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Las credenciales se configuran en el archivo `.env` en la raíz del proyecto (copiar desde `.env.example`). **Se muestran aquí solo para pruebas, en un proyecto real las credenciales nunca deben exponerse en el README.**
 
-## Contributing
+| Variable | Valor por defecto | Descripción |
+|---|---|---|
+| `MYSQL_ROOT_PASSWORD` | `root_secret` | Contraseña root de MySQL |
+| `MYSQL_DATABASE` | `aeroflash` | Nombre de la base de datos |
+| `MYSQL_USER` | `aeroflash` | Usuario de la aplicación |
+| `MYSQL_PASSWORD` | `aeroflash_secret` | Contraseña del usuario |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Ejecutar docker para levantar la API, fronted y la base de datos    MySQL
 
-## Code of Conduct
+```bash
+docker compose up -d --build
+docker ps
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Servicio           | URL                                       |
+|--------------------|-------------------------------------------|
+| **Frontend**       | `http://localhost:5173`                   |
+| **API Swagger UI** | `http://localhost:8080/api/documentation` |
+| **MySQL**          | `Puerto 3307`                             |
 
-## Security Vulnerabilities
+Las migraciones y datos de prueba se ejecutan automáticamente al iniciar. Para reconstruir después de cambios en el código:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+docker compose down && docker compose up -d --build
+```
 
-## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Credenciales de prueba
+
+| Campo | Valor |
+|-------|-------|
+| Email | `admin@aeroflash.com` |
+| Password | `password` |
+
+
+## Frontend (React) — Desarrollo local
+
+Sin Docker, ejecutar el frontend localmente. Ubicado en `/frontend`.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+- **App**: `http://localhost:5173`
+- **Login**: `admin@aeroflash.com` / `password`
+- Apunta a la API en `http://localhost:8080/api/v1` (configurable en `.env`)
+
+Stack: **React 18 + Vite + TanStack Query + Tailwind CSS**.
+
+#### Acceso a MySQL
+
+Conectarse desde el host:
+
+```bash
+docker compose exec mysql mysql -u aeroflash -paeroflash_secret aeroflash
+```
+
+| Campo | Valor |
+|---|---|
+| Host | `localhost:3307` |
+| Base de datos | `aeroflash` |
+| Usuario | `aeroflash` |
+| Contraseña | `aeroflash_secret` |
+
+## Documentación de la API (Swagger)
+
+Swagger UI disponible en: **`http://localhost:8080/api/documentation`**
+
+### Endpoints
+
+| Método | Endpoint | Auth | Descripción |
+|--------|----------|------|-------------|
+| `POST` | `/api/v1/auth/login` | No | Autenticar y obtener token JWT |
+| `POST` | `/api/v1/auth/refresh` | Bearer JWT | Refrescar token expirado |
+| `GET` | `/api/v1/auth/me` | Bearer JWT | Obtener perfil del usuario |
+| `POST` | `/api/v1/packages` | Bearer JWT | Registrar un nuevo paquete |
+| `GET` | `/api/v1/packages/{tracking_number}` | Bearer JWT | Obtener detalle e historial del paquete |
+| `PATCH` | `/api/v1/packages/{tracking_number}/status` | Bearer JWT | Actualizar estado del paquete |
+
+### Flujo de estados
+
+```
+Registered → In Transit → Out for Delivery → Delivered
+     ↓            ↓              ↓
+  Cancelled   Cancelled      Cancelled
+```
+
+- Cambiar a **In Transit** requiere un `courier_id` y `vehicle_id` activos
+- Transiciones inválidas retornan `400`
+
+## Datos de prueba
+
+| Número de rastreo | Estado |
+|-------------------|--------|
+| `AF-TEST-001` | Registered |
+| `AF-TEST-002` | In Transit |
+| `AF-TEST-003` | Out for Delivery |
+| `AF-TEST-004` | Delivered |
+| `AF-TEST-005` | Cancelled |
+
+## Ejecutar tests
+
+```bash
+cd backend
+php artisan test
+```
+
+## Arquitectura
+
+Clean Architecture con tres capas:
+
+```
+app/
+├── Domain/              # Entidades de negocio, enums, interfaces de repositorio
+├── Application/         # Casos de uso, DTOs, objetos de respuesta
+└── Infrastructure/      # Modelos Eloquent, implementaciones de repositorio, JWT
+```
+
+### Patrones de diseño
+
+| Patrón | Donde se aplica |
+|---|---|
+| **Repository** | `PackageRepositoryInterface` → `EloquentPackageRepository` |
+| **DTO** | `RegisterPackageDTO`, `UpdatePackageStatusDTO`, `AuthResponse`, `PackageResponse` |
+| **Use Case / Interactor** | `RegisterPackageUseCase`, `GetPackageUseCase`, `UpdatePackageStatusUseCase` |
+| **State Machine** | `PackageStatusEnum` con transiciones de estado |
+| **Dependency Injection** | Bindings en `AppServiceProvider` |
+
+## Seguridad
+
+### Pipeline CI/CD
+
+Escaneo automático de seguridad vía GitHub Actions (`.github/workflows/security-scan.yml`) en cada push, PR y semanalmente:
+
+| Herramienta | Tipo | Descripción |
+|---|---|---|
+| **Semgrep** | SAST | Analiza código fuente en busca de vulnerabilidades y patrones inseguros |
+| **OWASP Dependency-Check** | SCA | Escanea `composer.lock` en busca de dependencias con CVEs conocidos |
+| **TruffleHog** | Secrets | Escanea el repositorio en busca de credenciales, API keys y tokens |
+
+### Autenticación — JWT
+
+Todos los endpoints de paquetes están protegidos con **JWT (JSON Web Token)** mediante `App\Infrastructure\Auth\JwtAuthService`.
+
+
+
+### Validación de entradas — LoginRequest
+
+`app/Http/Requests/LoginRequest.php` aplica defensas en capas **antes** de que la petición llegue al controlador:
+
+### Buenas prácticas OWASP
+
+- **Autenticación JWT** en todos los endpoints de paquetes (`firebase/php-jwt`, stateless, configurable vía `JWT_SECRET`)
+- **Rate limiting**: 5 intentos de login/minuto por IP + email (protección anti fuerza bruta)
+- **Validación de entradas** vía FormRequests con sanitización (`trim`, `mb_strtolower`, verificación DNS)
+- **Prevención XSS**: `XssSanitizer` elimina etiquetas HTML; middleware `SecurityHeaders` agrega `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`
+- **Consultas parametrizadas** vía Eloquent ORM (prevención de SQL Injection)
+- **Hash bcrypt** mediante `Hash::check()` con BCRYPT_ROUNDS=12
+- **Sin enumeración de usuarios**: mensaje genérico "Invalid credentials"
+- **JWT de corta duración**: token expira en 1 hora, con ventana de refresco de 2 semanas
+- **Respuestas de error estandarizadas** (400, 401, 404, 500)
+- **TruffleHog** escanea cada commit en busca de secretos
+
+### Servicios Docker
+
+| Servicio | Contenedor | Puerto | Descripción |
+|---|---|---|---|
+| **api** | `aeroflash-api` | `8080:80` | Laravel API (nginx + PHP-FPM vía supervisor) |
+| **frontend** | `aeroflash-frontend` | `5173:5173` | Vite dev server con React |
+| **mysql** | `aeroflash-mysql` | `3307:3306` | MySQL 8.0 con volumen persistente |
