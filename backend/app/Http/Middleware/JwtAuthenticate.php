@@ -18,7 +18,7 @@ class JwtAuthenticate
 
     public function handle(Request $request, Closure $next)
     {
-        $token = $request->cookie('aeroflash_token') ?? $request->bearerToken();
+        $token = $request->bearerToken() ?? $request->cookie('aeroflash_token');
 
         if (!$token) {
             return ApiResponse::error('Token not provided', Response::HTTP_UNAUTHORIZED);
