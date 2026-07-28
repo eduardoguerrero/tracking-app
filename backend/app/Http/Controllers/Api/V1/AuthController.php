@@ -36,10 +36,7 @@ final class AuthController extends Controller
 
         Log::info('Login successful', ['email' => $request->input('email')]);
 
-        $response = ApiResponse::success(
-            AuthResponse::fromToken($token)->toArray()['data'],
-            'Authentication successful'
-        );
+        $response = ApiResponse::success(AuthResponse::fromToken($token)->toArray()['data'],'Authentication successful');
 
         return $response->withCookie($this->makeCookie($token));
     }
@@ -57,14 +54,10 @@ final class AuthController extends Controller
         if (!$newToken) {
             Log::warning('Token refresh failed');
 
-            return ApiResponse::error('Token is invalid or outside refresh window', Response::HTTP_UNAUTHORIZED)
-                ->withoutCookie(self::COOKIE_NAME);
+            return ApiResponse::error('Token is invalid or outside refresh window', Response::HTTP_UNAUTHORIZED)->withoutCookie(self::COOKIE_NAME);
         }
 
-        $response = ApiResponse::success(
-            AuthResponse::fromToken($newToken)->toArray()['data'],
-            'Token refreshed successfully'
-        );
+        $response = ApiResponse::success(AuthResponse::fromToken($newToken)->toArray()['data'],'Token refreshed successfully');
 
         return $response->withCookie($this->makeCookie($newToken));
     }
@@ -73,19 +66,14 @@ final class AuthController extends Controller
     {
         Log::info('User logged out', ['user_id' => auth()->user()?->id]);
 
-        return ApiResponse::success(null, 'Logged out successfully')
-            ->withoutCookie(self::COOKIE_NAME);
+        return ApiResponse::success(null, 'Logged out successfully')->withoutCookie(self::COOKIE_NAME);
     }
 
     public function me(): JsonResponse
     {
         $user = auth()->user();
 
-        return ApiResponse::success([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-        ]);
+        return ApiResponse::success(['id' => $user->id,'name' => $user->name,'email' => $user->email,]);
     }
 
     private function makeCookie(string $token): Cookie
