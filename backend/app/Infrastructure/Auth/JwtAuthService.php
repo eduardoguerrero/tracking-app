@@ -19,10 +19,17 @@ class JwtAuthService
 
     public function __construct()
     {
-        $this->secret = config('jwt.secret', config('app.key'));
+        $this->secret = config('jwt.secret') ?: config('app.key');
+
+        if (empty($this->secret)) {
+            throw new \RuntimeException(
+                'JWT_SECRET is not set. Define it in .env or docker-compose environment.'
+            );
+        }
+
         $this->algorithm = config('jwt.algorithm', 'HS256');
-        $this->ttl = (int)config('jwt.ttl', 3600);
-        $this->refreshTtl = (int)config('jwt.refresh_ttl', 1209600);
+        $this->ttl = (int) config('jwt.ttl', 3600);
+        $this->refreshTtl = (int) config('jwt.refresh_ttl', 1209600);
     }
 
     public function attempt(string $email, string $password): ?string

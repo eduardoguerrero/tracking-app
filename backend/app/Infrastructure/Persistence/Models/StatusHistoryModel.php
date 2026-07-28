@@ -16,6 +16,7 @@ class StatusHistoryModel extends Model
         'new_status',
         'comment',
         'location',
+        'created_at',
     ];
 
     protected $casts = [
