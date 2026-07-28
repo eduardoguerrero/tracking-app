@@ -13,6 +13,7 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware('jwt-auth')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::post('/packages', [PackageController::class, 'store']);
         Route::get('/packages/{tracking_number}', [PackageController::class, 'show']);
         Route::patch('/packages/{tracking_number}/status', [PackageController::class, 'updateStatus']);

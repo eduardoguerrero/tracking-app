@@ -9,6 +9,7 @@ use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Firebase\JWT\SignatureInvalidException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -149,10 +150,7 @@ class JwtAuthService
         }
 
         try {
-            return json_decode(
-                JWT::urlsafeB64Decode($parts[1]),
-                false
-            );
+            return json_decode(JWT::urlsafeB64Decode($parts[1]),false);
         } catch (\UnexpectedValueException) {
             return null;
         }
@@ -168,5 +166,26 @@ class JwtAuthService
     private function normalizeEmail(string $email): string
     {
         return trim(mb_strtolower($email));
+    }
+
+    public function blacklist(string $token): void
+    {
+        $payload = $this->extractPayload($token);
+
+        if ($payload && isset($payload->jti, $payload->exp)) {
+            $ttl = max(0, (int) $payload->exp - time());
+            Cache::put('jwt_blacklist:' . $payload->jti, true, $ttl);
+        }
+    }
+
+    public function isBlacklisted(string $token): bool
+    {
+        $payload = $this->extractPayload($token);
+
+        if ($payload && isset($payload->jti)) {
+            return Cache::has('jwt_blacklist:' . $payload->jti);
+        }
+
+        return false;
     }
 }

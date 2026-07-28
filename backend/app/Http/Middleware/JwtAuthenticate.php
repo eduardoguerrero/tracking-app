@@ -12,18 +12,24 @@ use Illuminate\Http\Response;
 
 class JwtAuthenticate
 {
-    public function __construct(private readonly JwtAuthService $jwtAuthService,)
+    public function __construct(private readonly JwtAuthService $jwtAuthService)
     {
     }
 
     public function handle(Request $request, Closure $next)
     {
-        $token = $request->bearerToken();
+        $token = $request->cookie('aeroflash_token') ?? $request->bearerToken();
+
         if (!$token) {
             return ApiResponse::error('Token not provided', Response::HTTP_UNAUTHORIZED);
         }
 
+        if ($this->jwtAuthService->isBlacklisted($token)) {
+            return ApiResponse::error('Token has been revoked', Response::HTTP_UNAUTHORIZED);
+        }
+
         $user = $this->jwtAuthService->getUserFromToken($token);
+
         if (!$user) {
             return ApiResponse::error('Invalid or expired token', Response::HTTP_UNAUTHORIZED);
         }

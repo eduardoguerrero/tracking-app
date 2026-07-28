@@ -62,11 +62,18 @@ final class AuthController extends Controller
         return $response->withCookie($this->makeCookie($newToken));
     }
 
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
+        $token = $request->cookie(self::COOKIE_NAME) ?? $request->bearerToken();
+
+        if ($token) {
+            $this->jwtAuthService->blacklist($token);
+        }
+
         Log::info('User logged out', ['user_id' => auth()->user()?->id]);
 
-        return ApiResponse::success(null, 'Logged out successfully')->withoutCookie(self::COOKIE_NAME);
+        return ApiResponse::success(null, 'Logged out successfully')
+            ->withoutCookie(self::COOKIE_NAME);
     }
 
     public function me(): JsonResponse
