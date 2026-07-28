@@ -36,6 +36,12 @@ docker compose up -d --build
 
 Las migraciones y datos de prueba se ejecutan automáticamente al iniciar. Para reconstruir después de cambios en el código:
 
+![screenshot/login.png](screenshot/login.png)
+
+![screenshot/track_id.png](screenshot/track_id.png)
+
+![screenshot/track.png](screenshot/track.png)
+
 ```bash
 docker compose down && docker compose up -d --build
 ```
@@ -73,6 +79,8 @@ Stack: **React 18 + Vite + TanStack Query + Tailwind CSS**.
 ## Documentación de la API (Swagger)
 
 Swagger UI disponible en: **`http://localhost:8080/api/documentation`**
+
+![screenshot/docs.png](screenshot/img.png)
 
 ### Endpoints
 
