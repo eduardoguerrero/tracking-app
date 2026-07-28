@@ -31,6 +31,7 @@ export default function TrackingPage() {
         onChange={setInputValue}
         onSearch={handleSearch}
         isLoading={isLoading}
+        hasSearched={!!trackingNumber}
         footer={
           !inputValue.trim() ? (
             <div className="text-center text-gray-400 dark:text-gray-600 py-4">

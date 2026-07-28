@@ -36,7 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (InvalidStatusTransitionException $e) {
-            return ApiResponse::error($e->getMessage(), 400);
+            return ApiResponse::error('Invalid status transition', 400);
         });
 
         $exceptions->render(function (InvalidArgumentException $e, Request $request) {

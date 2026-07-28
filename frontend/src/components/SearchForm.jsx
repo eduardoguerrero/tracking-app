@@ -1,19 +1,41 @@
+import { useRef, useEffect } from 'react';
 import { useLocale } from '../context/LocaleContext';
 
-export default function SearchForm({ value, onChange, onSearch, isLoading, footer }) {
+export default function SearchForm({ value, onChange, onSearch, isLoading, footer, hasSearched }) {
   const { t } = useLocale();
+  const debounceRef = useRef(null);
+  const lastPasteRef = useRef(0);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const trimmed = value.trim();
-    if (trimmed) {
-      onSearch(trimmed);
-    }
+    if (trimmed) onSearch(trimmed);
   };
 
   const handleChange = (e) => {
     onChange(e.target.value);
+
+    // Auto-submit on paste (detected by large text delta in < 100ms)
+    const now = Date.now();
+    const inputType = (e.nativeEvent && e.nativeEvent.inputType) || '';
+
+    if (inputType === 'insertFromPaste' || (now - lastPasteRef.current < 100 && e.target.value.length > 3)) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        const v = e.target.value.trim();
+        if (v && v.length >= 4) onSearch(v);
+      }, 400);
+    }
+    lastPasteRef.current = now;
   };
+
+  const handlePaste = () => {
+    lastPasteRef.current = Date.now();
+  };
+
+  useEffect(() => {
+    return () => clearTimeout(debounceRef.current);
+  }, []);
 
   return (
     <div className="max-w-lg mx-auto">
@@ -26,7 +48,8 @@ export default function SearchForm({ value, onChange, onSearch, isLoading, foote
             type="text"
             value={value}
             onChange={handleChange}
-            placeholder={t('tracking.inputPlaceholder')}
+            onPaste={handlePaste}
+            placeholder={hasSearched ? t('tracking.inputPlaceholderAgain') : t('tracking.inputPlaceholder')}
             className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg text-sm
                        bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent

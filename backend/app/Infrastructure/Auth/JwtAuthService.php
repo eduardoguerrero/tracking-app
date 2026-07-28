@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Infrastructure\Auth;
 
 use App\Models\User;
+use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Firebase\JWT\SignatureInvalidException;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class JwtAuthService
@@ -22,9 +25,7 @@ class JwtAuthService
         $this->secret = config('jwt.secret') ?: config('app.key');
 
         if (empty($this->secret)) {
-            throw new \RuntimeException(
-                'JWT_SECRET is not set. Define it in .env or docker-compose environment.'
-            );
+            throw new \RuntimeException('JWT_SECRET is not set. Define it in .env or docker-compose environment.');
         }
 
         $this->algorithm = config('jwt.algorithm', 'HS256');
@@ -64,7 +65,14 @@ class JwtAuthService
     {
         try {
             return JWT::decode($token, new Key($this->secret, $this->algorithm));
-        } catch (\Exception) {
+        } catch (ExpiredException $e) {
+            Log::warning('JWT token expired', ['sub' => $this->extractSub($token)]);
+            return null;
+        } catch (SignatureInvalidException $e) {
+            Log::warning('JWT signature invalid');
+            return null;
+        } catch (\UnexpectedValueException $e) {
+            Log::warning('JWT validation failed', ['error' => $e->getMessage()]);
             return null;
         }
     }
@@ -78,11 +86,6 @@ class JwtAuthService
         }
 
         return User::find($payload->sub);
-    }
-
-    private function normalizeEmail(string $email): string
-    {
-        return trim(mb_strtolower($email));
     }
 
     public function refreshToken(string $token): ?string
@@ -102,25 +105,68 @@ class JwtAuthService
         return $this->generateToken($user);
     }
 
+    /**
+     * Validates a potentially expired JWT for the refresh flow.
+     *
+     * Extracts the payload manually to check the refresh window (iat + refreshTtl),
+     * then verifies the full token signature. Returns the payload if:
+     *   - Signature is valid (even if exp has passed)
+     *   - Token is within the refresh window (iat + refreshTtl >= now)
+     */
     private function validateExpiredToken(string $token): ?object
     {
-        try {
-            $payload = JWT::decode(
-                $token,
-                new Key($this->secret, $this->algorithm)
-            );
-        } catch (\Exception) {
-            return null;
-        }
+        $payload = $this->extractPayload($token);
 
-        if (!isset($payload->sub, $payload->iat)) {
+        if (!$payload || !isset($payload->sub, $payload->iat)) {
             return null;
         }
 
         if (time() > $payload->iat + $this->refreshTtl) {
+            Log::info('JWT refresh rejected: outside refresh window');
             return null;
         }
 
-        return $payload;
+        try {
+            JWT::decode($token, new Key($this->secret, $this->algorithm));
+            return $payload;
+        } catch (ExpiredException) {
+            return $payload;
+        } catch (SignatureInvalidException $e) {
+            Log::warning('JWT refresh rejected: invalid signature');
+            return null;
+        } catch (\UnexpectedValueException $e) {
+            Log::warning('JWT refresh failed', ['error' => $e->getMessage()]);
+            return null;
+        }
+    }
+
+    private function extractPayload(string $token): ?object
+    {
+        $parts = explode('.', $token);
+
+        if (count($parts) !== 3) {
+            return null;
+        }
+
+        try {
+            return json_decode(
+                JWT::urlsafeB64Decode($parts[1]),
+                false
+            );
+        } catch (\UnexpectedValueException) {
+            return null;
+        }
+    }
+
+    private function extractSub(string $token): ?int
+    {
+        $payload = $this->extractPayload($token);
+
+        return $payload->sub ?? null;
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return trim(mb_strtolower($email));
     }
 }
